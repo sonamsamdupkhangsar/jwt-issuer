@@ -1,5 +1,5 @@
-# jwt-spring-security
-This is a security library that will issue Oauth2 type of JWT token and also provide a library api to validate it using a RSA public key.
+# jwt-issuer
+This is a security library that will issue Oauth2 type of JWT token. 
 
 The intention is that a service like a [jwt-rest-service](https://github.com/sonamsamdupkhangsar/jwt-rest-service) will use this library to issue a JWT token.  
 The microservice that intend to expose api will allow access and validate the request JWT token using the associated public key with this library.
