@@ -44,6 +44,9 @@ public class JwtValidation {
 
         jwtTokenString.as(StepVerifier::create).assertNext(jwt -> {
             LOG.info("jwt: {}", jwt);
-            assertThat(jwt).isNotNull();}).verifyComplete();
+            assertThat(jwt).isNotNull();
+            assertThat(jwtCreator.getPublicKey(jwtKey.getId())).isNotNull();
+            jwtCreator.getPublicKey(jwtKey.getId()).subscribe(key -> LOG.info("public key is {}", key));
+        }).verifyComplete();
     }
 }

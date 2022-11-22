@@ -128,4 +128,11 @@ public class PublicKeyJwtCreator implements JwtCreator {
         JwtKey jwtKey = new JwtKey(privateKeyString, publicKeyString);
         return jwtKey;
     }
+
+    @Override
+    public Mono<String> getPublicKey(UUID keyId) {
+        LOG.info("return public key for keyId: {}", keyId);
+
+        return  jwtKeyRepository.findById(keyId).map(jwtKey -> jwtKey.getPublicKey());
+    }
 }

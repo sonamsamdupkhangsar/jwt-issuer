@@ -7,4 +7,5 @@ import java.util.UUID;
 
 public interface JwtCreator {
     Mono<String> create(String clientId, String groupNames, String subject, String audience, int calendarField, int calendarValue);
+    Mono<String> getPublicKey(UUID keyId);
 }
