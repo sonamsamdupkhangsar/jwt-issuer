@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.domain.Persistable;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -63,5 +64,22 @@ public class JwtKey implements Persistable<UUID> {
     @Override
     public boolean isNew() {
         return newKey;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        JwtKey jwtKey = (JwtKey) o;
+        return newKey == jwtKey.newKey &&
+                Objects.equals(id, jwtKey.id) &&
+                Objects.equals(privateKey, jwtKey.privateKey) &&
+                Objects.equals(publicKey, jwtKey.publicKey) &&
+                Objects.equals(revoked, jwtKey.revoked);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, privateKey, publicKey, revoked, newKey);
     }
 }

@@ -1,7 +1,5 @@
 package me.sonam.security.jwt;
 
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.*;
 import me.sonam.security.jwt.repo.JwtKeyRepository;
 import me.sonam.security.jwt.repo.entity.JwtKey;
@@ -63,9 +61,6 @@ public class PublicKeyJwtCreator implements JwtCreator {
             calendar.add(calendarField, calendarValue);
             Date expireDate = calendar.getTime();
 
-            byte[] privateByteKey  = Base64.getDecoder().decode(jwtKey.getPrivateKey());
-            LOG.info("private byte key:: {}" + privateByteKey);
-
             Key privateKey = loadPrivateKey(jwtKey.getPrivateKey());
 
             String jwt = Jwts.builder()
@@ -111,19 +106,9 @@ public class PublicKeyJwtCreator implements JwtCreator {
 
     public JwtKey createJwtKey() throws Exception {
         Map<String, Object> rsaKeys = generateRSAKeys();
-        PrivateKey privateKey = (PrivateKey) rsaKeys.get("private");
-
-        byte[] prbytes = privateKey.getEncoded();
-        byte[] pubytes = privateKey.getEncoded();
-        LOG.info("private key in bytes: {}", prbytes);
-        LOG.info("public key bytes: {}", pubytes);
-
 
         final String publicKeyString = Base64.getEncoder().encodeToString(((PublicKey) rsaKeys.get("public")).getEncoded());
         final String privateKeyString = Base64.getEncoder().encodeToString(((PrivateKey) rsaKeys.get("private")).getEncoded());
-
-        LOG.info("private key: {}",privateKeyString);
-        LOG.info("public key: {}", publicKeyString);
 
         JwtKey jwtKey = new JwtKey(privateKeyString, publicKeyString);
         return jwtKey;
@@ -131,7 +116,7 @@ public class PublicKeyJwtCreator implements JwtCreator {
 
     @Override
     public Mono<String> getPublicKey(UUID keyId) {
-        LOG.info("return public key for keyId: {}", keyId);
+        LOG.trace("return public key");
 
         return  jwtKeyRepository.findById(keyId).map(jwtKey -> jwtKey.getPublicKey());
     }
