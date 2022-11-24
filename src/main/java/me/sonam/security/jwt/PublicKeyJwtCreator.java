@@ -36,11 +36,11 @@ public class PublicKeyJwtCreator implements JwtCreator {
 
     public void checkForKey() {
         Mono<JwtKey> keyMono = jwtKeyRepository.findTop1ByRevokedIsFalse();
-        keyMono.switchIfEmpty(generateKey()).subscribe(jwtKey ->LOG.info("initialize key"));
+        keyMono.switchIfEmpty(generateKey()).subscribe();
     }
 
     private Mono<JwtKey> generateKey() {
-        LOG.info("generate key");
+        LOG.debug("generate key");
         try {
             JwtKey jwtKey = createJwtKey();
             return jwtKeyRepository.save(jwtKey);
@@ -76,7 +76,7 @@ public class PublicKeyJwtCreator implements JwtCreator {
                     .signWith(SignatureAlgorithm.RS512, privateKey)
                     .compact();
 
-            LOG.info("returning jwt");
+            LOG.debug("returning jwt");
             return Mono.just(jwt);
         }).switchIfEmpty(Mono.just("No key found"));
     }
