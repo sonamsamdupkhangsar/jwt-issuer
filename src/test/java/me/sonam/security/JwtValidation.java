@@ -39,8 +39,9 @@ public class JwtValidation {
         jwtKeyRepository.save(jwtKey).subscribe(jwtKey1 -> LOG.info("saved jwtKey: {}", jwtKey1));
 
         final String clientId = "sonam-123-322";
+        final String clientUserRole = "admin";
         final String groups = "Admin, Cameramen, Driver, foodballer";
-        Mono<String> jwtTokenString = jwtCreator.create(clientId, groups, "sonam-username", "https://sonam.cloud", Calendar.HOUR, 5);
+        Mono<String> jwtTokenString = jwtCreator.create(clientUserRole, clientId, groups, "sonam-username", "https://sonam.cloud", Calendar.HOUR, 5);
 
         jwtTokenString.as(StepVerifier::create).assertNext(jwt -> {
             LOG.info("jwt: {}", jwt);

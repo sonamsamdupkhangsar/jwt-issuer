@@ -51,7 +51,7 @@ public class PublicKeyJwtCreator implements JwtCreator {
     }
 
     @Override
-    public Mono<String> create(String clientId, String groupNames, String subject, String audience, int calendarField, int calendarValue) {
+    public Mono<String> create(String clientUserRole, String clientId, String groupNames, String subject, String audience, int calendarField, int calendarValue) {
         checkForKey();
 
         return jwtKeyRepository.findTop1ByRevokedIsFalse().flatMap(jwtKey -> {
@@ -70,6 +70,7 @@ public class PublicKeyJwtCreator implements JwtCreator {
                     .setIssuedAt(issueDate)
                     .setHeaderParam("groups", groupNames)
                     .setHeaderParam("clientId", clientId)
+                    .setHeaderParam("clientUserRole", clientUserRole)
                     .setHeaderParam("keyId", jwtKey.getId())
                     .setExpiration(expireDate)
                     .setId(UUID.randomUUID().toString())
@@ -97,8 +98,7 @@ public class PublicKeyJwtCreator implements JwtCreator {
                             Base64.getDecoder().decode(stored.getBytes(StandardCharsets.UTF_8)));
             KeyFactory kf = KeyFactory.getInstance("RSA");
             return kf.generatePrivate(keySpec);
-        }
-        catch (GeneralSecurityException gse) {
+        } catch (GeneralSecurityException gse) {
             LOG.error("exception occured", gse);
             return null;
         }
@@ -110,8 +110,7 @@ public class PublicKeyJwtCreator implements JwtCreator {
         final String publicKeyString = Base64.getEncoder().encodeToString(((PublicKey) rsaKeys.get("public")).getEncoded());
         final String privateKeyString = Base64.getEncoder().encodeToString(((PrivateKey) rsaKeys.get("private")).getEncoded());
 
-        JwtKey jwtKey = new JwtKey(privateKeyString, publicKeyString);
-        return jwtKey;
+        return new JwtKey(privateKeyString, publicKeyString);
     }
 
     @Override
