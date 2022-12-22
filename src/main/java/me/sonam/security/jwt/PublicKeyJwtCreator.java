@@ -115,8 +115,14 @@ public class PublicKeyJwtCreator implements JwtCreator {
 
     @Override
     public Mono<String> getPublicKey(UUID keyId) {
-        LOG.trace("return public key");
+        LOG.info("get public key for keyId: {}", keyId);
 
-        return  jwtKeyRepository.findById(keyId).map(jwtKey -> jwtKey.getPublicKey());
+        jwtKeyRepository.count().subscribe(aLong -> LOG.info("found {} rows of jwtKeys", aLong));
+        jwtKeyRepository.findById(keyId).subscribe(jwtKey -> LOG.info("for id: {} found jwtKey: {}", keyId, jwtKey));
+
+        return  jwtKeyRepository.findById(keyId)
+                .map(jwtKey -> jwtKey.getPublicKey())
+                .doOnNext(s -> LOG.info("publicKey: {}", s))
+                .map(s -> s);
     }
 }
