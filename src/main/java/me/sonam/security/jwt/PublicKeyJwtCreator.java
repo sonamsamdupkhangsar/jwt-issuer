@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.time.Duration;
 import java.util.*;
 
 /**
@@ -50,6 +51,44 @@ public class PublicKeyJwtCreator implements JwtCreator {
         }
     }
 
+    public Mono<String> create(JwtBody jwtBody) {
+        checkForKey();
+
+        return jwtKeyRepository.findTop1ByRevokedIsFalse().flatMap(jwtKey -> {
+            Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+            Date issueDate = calendar.getTime();
+
+            Duration duration = Duration.parse(jwtBody.getJwtExpiresInDuration());
+
+            calendar.add(Calendar.SECOND, (int)duration.getSeconds());
+
+            Date expireDate = calendar.getTime();
+
+            Key privateKey = loadPrivateKey(jwtKey.getPrivateKey());
+
+            Map<String, Object> claimsMap = new HashMap<>();
+            claimsMap.put("clientId", jwtBody.getClientId());
+            claimsMap.put("scope", jwtBody.getScopes());
+            claimsMap.put("keyId", jwtKey.getId().toString());
+
+            String jwt = Jwts.builder()
+                    .setSubject(jwtBody.getSubject())
+                    .setIssuer(issuer)
+                    .setAudience(jwtBody.getAudience())
+                    .setIssuedAt(issueDate)
+                    .addClaims(claimsMap)
+                    .setExpiration(expireDate)
+                    .setId(UUID.randomUUID().toString())
+                    .signWith(SignatureAlgorithm.RS512, privateKey)
+                    .compact();
+
+            LOG.debug("returning jwt");
+            return Mono.just(jwt);
+        }).switchIfEmpty(Mono.just("No key found"));
+    }
+
+    // deprecate this method, use {#create} method
+    @Deprecated
     @Override
     public Mono<String> create(String clientUserRole, String clientId, String groupNames, String subject, String audience, int calendarField, int calendarValue) {
         checkForKey();

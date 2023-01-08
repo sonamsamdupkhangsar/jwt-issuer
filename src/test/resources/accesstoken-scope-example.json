@@ -1,0 +1,11 @@
+{
+  "sub": "24312545-1287-42b4-9338-fa04d7f711f3",
+  "aud": "email",
+  "clientId": "sonam-123-322",
+  "scope": "email.write",
+  "iss": "https:\/\/www.sonam.cloud",
+  "keyId": "b33e38f6-f8b4-4db6-b5ce-854c1eda3d4c",
+  "exp": 1673210525,
+  "iat": 1673210515,
+  "jti": "249cd8af-f5ad-4c88-a23f-a683242a7244"
+}
