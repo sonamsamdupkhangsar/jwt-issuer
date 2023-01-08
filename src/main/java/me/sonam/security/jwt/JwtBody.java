@@ -4,8 +4,6 @@ package me.sonam.security.jwt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
-
 public class JwtBody {
     private static final Logger LOG = LoggerFactory.getLogger(JwtBody.class);
 
@@ -64,6 +62,7 @@ public class JwtBody {
     public String getClientId() {
         return clientId;
     }
+
     public String getAudience() {
         return audience;
     }

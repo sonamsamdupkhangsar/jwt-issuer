@@ -51,6 +51,7 @@ public class PublicKeyJwtCreator implements JwtCreator {
         }
     }
 
+    @Override
     public Mono<String> create(JwtBody jwtBody) {
         checkForKey();
 
@@ -69,7 +70,7 @@ public class PublicKeyJwtCreator implements JwtCreator {
             Map<String, Object> claimsMap = new HashMap<>();
             claimsMap.put("clientId", jwtBody.getClientId());
             claimsMap.put("scope", jwtBody.getScopes());
-            claimsMap.put("keyId", jwtKey.getId().toString());
+            claimsMap.put("keyId", jwtKey.getId() != null ? jwtKey.getId().toString() : null);
 
             String jwt = Jwts.builder()
                     .setSubject(jwtBody.getSubject())
@@ -77,40 +78,6 @@ public class PublicKeyJwtCreator implements JwtCreator {
                     .setAudience(jwtBody.getAudience())
                     .setIssuedAt(issueDate)
                     .addClaims(claimsMap)
-                    .setExpiration(expireDate)
-                    .setId(UUID.randomUUID().toString())
-                    .signWith(SignatureAlgorithm.RS512, privateKey)
-                    .compact();
-
-            LOG.debug("returning jwt");
-            return Mono.just(jwt);
-        }).switchIfEmpty(Mono.just("No key found"));
-    }
-
-    // deprecate this method, use {#create} method
-    @Deprecated
-    @Override
-    public Mono<String> create(String clientUserRole, String clientId, String groupNames, String subject, String audience, int calendarField, int calendarValue) {
-        checkForKey();
-
-        return jwtKeyRepository.findTop1ByRevokedIsFalse().flatMap(jwtKey -> {
-            Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-            Date issueDate = calendar.getTime();
-
-            calendar.add(calendarField, calendarValue);
-            Date expireDate = calendar.getTime();
-
-            Key privateKey = loadPrivateKey(jwtKey.getPrivateKey());
-
-            String jwt = Jwts.builder()
-                    .setSubject(subject)
-                    .setIssuer(issuer)
-                    .setAudience(audience)
-                    .setIssuedAt(issueDate)
-                    .setHeaderParam("groups", groupNames)
-                    .setHeaderParam("clientId", clientId)
-                    .setHeaderParam("clientUserRole", clientUserRole)
-                    .setHeaderParam("keyId", jwtKey.getId())
                     .setExpiration(expireDate)
                     .setId(UUID.randomUUID().toString())
                     .signWith(SignatureAlgorithm.RS512, privateKey)
