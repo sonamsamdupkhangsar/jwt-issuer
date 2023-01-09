@@ -1,6 +1,8 @@
 package me.sonam.security;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwt;
 import me.sonam.security.jwt.JwtBody;
 import me.sonam.security.jwt.PublicKeyJwtCreator;
 import me.sonam.security.jwt.repo.JwtKeyRepository;
@@ -25,6 +27,7 @@ import java.util.Base64;
 import java.util.Calendar;
 import java.util.UUID;
 
+import static org.assertj.core.api.AssertionsForClassTypes.fail;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @EnableAutoConfiguration
@@ -64,6 +67,8 @@ public class JwtValidation {
                 JSONObject payload = new JSONObject(new String(Base64.getUrlDecoder().decode(parts[1])));
                 String signature = new String(Base64.getUrlDecoder().decode(parts[2]));
                 LOG.info("header: {},\n payload: {},\n signature: {}", header, payload, signature);
+
+                LOG.info("jwtBody: {}", getFromString(payload.toString()));
             }
             catch (JSONException jse) {
                 LOG.error("Failed to parse to json", jse);
@@ -73,5 +78,19 @@ public class JwtValidation {
             assertThat(jwtCreator.getPublicKey(jwtKey.getId())).isNotNull();
             jwtCreator.getPublicKey(jwtKey.getId()).subscribe(key -> LOG.info("public key is {}", key));
         }).verifyComplete();
+    }
+
+    public JwtBody getFromString(final String payload) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        JwtBody jwtBody = null;
+        try {
+            return objectMapper.readValue(payload, JwtBody.class);
+
+        } catch (JsonProcessingException e) {
+            LOG.error("failed to marshal payload to jwtBody type", e);
+            fail("failed to marshal payload to JwtBody");
+            return null;
+        }
     }
 }

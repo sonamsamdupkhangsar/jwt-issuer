@@ -69,13 +69,13 @@ public class PublicKeyJwtCreator implements JwtCreator {
 
             Map<String, Object> claimsMap = new HashMap<>();
             claimsMap.put("clientId", jwtBody.getClientId());
-            claimsMap.put("scope", jwtBody.getScopes());
+            claimsMap.put("scope", jwtBody.getScope());
             claimsMap.put("keyId", jwtKey.getId() != null ? jwtKey.getId().toString() : null);
 
             String jwt = Jwts.builder()
-                    .setSubject(jwtBody.getSubject())
+                    .setSubject(jwtBody.getSub())
                     .setIssuer(issuer)
-                    .setAudience(jwtBody.getAudience())
+                    .setAudience(jwtBody.getAud())
                     .setIssuedAt(issueDate)
                     .addClaims(claimsMap)
                     .setExpiration(expireDate)

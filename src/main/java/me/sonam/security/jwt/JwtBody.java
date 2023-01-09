@@ -7,44 +7,53 @@ import org.slf4j.LoggerFactory;
 public class JwtBody {
     private static final Logger LOG = LoggerFactory.getLogger(JwtBody.class);
 
-    private String subject;
-    private String scopes;
+    private String keyId;
+    private String sub;
+    private String scope;
     private String clientId;
-    private String audience;
-
+    private String aud;
     private String jwtExpiresInDuration;
+    private String exp;
+    private String iat;
+    private String jti;
+    private String iss;
 
     public JwtBody() {
 
     }
 
-    public JwtBody(String subject, String scopes, String clientId, String audience, String jwtExpiresInDuration) {
-        this.subject = subject;
+    public JwtBody(String sub, String scope, String clientId, String aud, String jwtExpiresInDuration) {
+        this.sub = sub;
 
-        this.scopes = scopes;
+        this.scope = scope;
         this.clientId = clientId;
-        this.audience = audience;
+        this.aud = aud;
         this.jwtExpiresInDuration = jwtExpiresInDuration;
 
-        if (this.subject.isEmpty()) {
+        if (this.sub.isEmpty()) {
             throw new JwtException("subject is empty");
         }
 
-        if (this.scopes.isEmpty()) {
+        if (this.scope.isEmpty()) {
             throw new JwtException("scopes is emtpy");
         }
 
         if (this.clientId.isEmpty()) {
             LOG.warn("clientId is empty");
         }
-        if (this.audience.isEmpty()) {
+        if (this.aud.isEmpty()) {
             throw new JwtException("audience is empty");
         }
     }
 
-    public String getSubject() {
-        return subject;
+    public String getSub() {
+        return sub;
     }
+
+    public String getKeyId() {
+        return keyId;
+    }
+
 
 
     public String getJwtExpiresInDuration() {
@@ -55,16 +64,51 @@ public class JwtBody {
         this.jwtExpiresInDuration = jwtExpiresInDuration;
     }
 
-    public String getScopes() {
-        return scopes;
+    public String getScope() {
+        return scope;
     }
 
     public String getClientId() {
         return clientId;
     }
 
-    public String getAudience() {
-        return audience;
+    public String getAud() {
+        return aud;
     }
 
+    public void setKeyId(String keyId) {
+        this.keyId = keyId;
+    }
+
+    public String getIss() {
+        return iss;
+    }
+
+    public String getExp() {
+        return exp;
+    }
+
+    public String getJti() {
+        return jti;
+    }
+
+    public String getIat() {
+        return iat;
+    }
+
+    @Override
+    public String toString() {
+        return "JwtBody{" +
+                "keyId='" + keyId + '\'' +
+                ", sub='" + sub + '\'' +
+                ", scope='" + scope + '\'' +
+                ", clientId='" + clientId + '\'' +
+                ", aud='" + aud + '\'' +
+                ", jwtExpiresInDuration='" + jwtExpiresInDuration + '\'' +
+                ", exp='" + exp + '\'' +
+                ", iat='" + iat + '\'' +
+                ", jti='" + jti + '\'' +
+                ", iss='" + iss + '\'' +
+                '}';
+    }
 }
