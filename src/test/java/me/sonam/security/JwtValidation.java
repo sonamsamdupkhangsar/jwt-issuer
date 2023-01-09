@@ -53,9 +53,8 @@ public class JwtValidation {
         final String subject = UUID.randomUUID().toString();
         final String audience = "email"; //the resource to access
         final String scopes = "email.write";
-        Duration tenSecondsDuration = Duration.ofSeconds(10);
 
-        JwtBody jwtBody = new JwtBody(subject, scopes, clientId, audience, tenSecondsDuration.toString());
+        JwtBody jwtBody = new JwtBody(subject, scopes, clientId, audience, 10);
 
         Mono<String> jwtTokenString = jwtCreator.create(jwtBody);
 

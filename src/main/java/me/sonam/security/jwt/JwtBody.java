@@ -14,7 +14,8 @@ public class JwtBody {
     private String scope;
     private String clientId;
     private String aud;
-    private String jwtExpiresInDuration;
+    private long expiresInSeconds;
+
     private String exp;
     private String iat;
     private String jti;
@@ -24,13 +25,13 @@ public class JwtBody {
 
     }
 
-    public JwtBody(String sub, String scope, String clientId, String aud, String jwtExpiresInDuration) {
+    public JwtBody(String sub, String scope, String clientId, String aud, long expiresInSeconds) {
         this.sub = sub;
 
         this.scope = scope;
         this.clientId = clientId;
         this.aud = aud;
-        this.jwtExpiresInDuration = jwtExpiresInDuration;
+        this.expiresInSeconds = expiresInSeconds;
 
         if (this.sub.isEmpty()) {
             throw new JwtException("subject is empty");
@@ -58,13 +59,6 @@ public class JwtBody {
 
 
 
-    public String getJwtExpiresInDuration() {
-        return jwtExpiresInDuration;
-    }
-
-    public void setJwtExpiresInDuration(String jwtExpiresInDuration) {
-        this.jwtExpiresInDuration = jwtExpiresInDuration;
-    }
 
     public String getScope() {
         return scope;
@@ -106,11 +100,15 @@ public class JwtBody {
                 ", scope='" + scope + '\'' +
                 ", clientId='" + clientId + '\'' +
                 ", aud='" + aud + '\'' +
-                ", jwtExpiresInDuration='" + jwtExpiresInDuration + '\'' +
+                ", expiresInSeconds='" + expiresInSeconds + '\'' +
                 ", exp='" + exp + '\'' +
                 ", iat='" + iat + '\'' +
                 ", jti='" + jti + '\'' +
                 ", iss='" + iss + '\'' +
                 '}';
+    }
+
+    public long getExpiresInSeconds() {
+        return expiresInSeconds;
     }
 }

@@ -59,7 +59,7 @@ public class PublicKeyJwtCreator implements JwtCreator {
             Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
             Date issueDate = calendar.getTime();
 
-            Duration duration = Duration.parse(jwtBody.getJwtExpiresInDuration());
+            Duration duration = Duration.ofSeconds(jwtBody.getExpiresInSeconds());
 
             calendar.add(Calendar.SECOND, (int)duration.getSeconds());
 
