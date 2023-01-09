@@ -4,10 +4,12 @@ package me.sonam.security.jwt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.UUID;
+
 public class JwtBody {
     private static final Logger LOG = LoggerFactory.getLogger(JwtBody.class);
 
-    private String keyId;
+    private UUID keyId;
     private String sub;
     private String scope;
     private String clientId;
@@ -50,7 +52,7 @@ public class JwtBody {
         return sub;
     }
 
-    public String getKeyId() {
+    public UUID getKeyId() {
         return keyId;
     }
 
@@ -76,7 +78,7 @@ public class JwtBody {
         return aud;
     }
 
-    public void setKeyId(String keyId) {
+    public void setKeyId(UUID keyId) {
         this.keyId = keyId;
     }
 
