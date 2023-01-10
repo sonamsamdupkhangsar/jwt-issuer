@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwt;
 import me.sonam.security.jwt.JwtBody;
+import me.sonam.security.jwt.JwtException;
 import me.sonam.security.jwt.PublicKeyJwtCreator;
 import me.sonam.security.jwt.repo.JwtKeyRepository;
 import me.sonam.security.jwt.repo.entity.JwtKey;
@@ -46,9 +47,9 @@ public class JwtValidation {
     public void create() throws Exception {
         LOG.info("Create jwt");
 
-        JwtKey jwtKey = jwtCreator.createJwtKey();
+     /*   JwtKey jwtKey = jwtCreator.createJwtKey();
         jwtKeyRepository.save(jwtKey).subscribe(jwtKey1 -> LOG.info("saved jwtKey: {}", jwtKey1));
-
+*/
         final String clientId = "sonam-123-322";
         final String subject = UUID.randomUUID().toString();
         final String audience = "email"; //the resource to access
@@ -64,19 +65,37 @@ public class JwtValidation {
             try {
                 JSONObject header = new JSONObject(new String(Base64.getUrlDecoder().decode(parts[0])));
                 JSONObject payload = new JSONObject(new String(Base64.getUrlDecoder().decode(parts[1])));
+
                 String signature = new String(Base64.getUrlDecoder().decode(parts[2]));
                 LOG.info("header: {},\n payload: {},\n signature: {}", header, payload, signature);
 
                 LOG.info("jwtBody: {}", getFromString(payload.toString()));
+
+                JwtBody jwtBody1 = getFromString(payload.toString());
+                assertThat(jwtCreator.getPublicKey(jwtBody1.getKeyId())).isNotNull();
+                jwtCreator.getPublicKey(jwtBody1.getKeyId()).subscribe(key -> LOG.info("public key is {}", key));
             }
             catch (JSONException jse) {
                 LOG.error("Failed to parse to json", jse);
             }
 
             assertThat(jwt).isNotNull();
-            assertThat(jwtCreator.getPublicKey(jwtKey.getId())).isNotNull();
-            jwtCreator.getPublicKey(jwtKey.getId()).subscribe(key -> LOG.info("public key is {}", key));
+
+
         }).verifyComplete();
+
+        LOG.info("request to create another jwt token");
+
+        jwtBody = new JwtBody(subject, scopes, clientId, audience, 10);
+
+        jwtTokenString = jwtCreator.create(jwtBody);
+        jwtTokenString.subscribe(s ->
+        LOG.info("jwtTokenString: {}", s)
+        );
+
+        jwtKeyRepository.findTop1ByRevokedIsFalse().switchIfEmpty(Mono.error(new JwtException("found empty")))
+                .subscribe(jwtKey -> LOG.info("jwtkey: {}", jwtKey));
+
     }
 
     public JwtBody getFromString(final String payload) {

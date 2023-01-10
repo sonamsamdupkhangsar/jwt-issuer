@@ -35,11 +35,6 @@ public class PublicKeyJwtCreator implements JwtCreator {
     public PublicKeyJwtCreator() {
     }
 
-    public void checkForKey() {
-        Mono<JwtKey> keyMono = jwtKeyRepository.findTop1ByRevokedIsFalse();
-        keyMono.switchIfEmpty(generateKey()).subscribe();
-    }
-
     private Mono<JwtKey> generateKey() {
         LOG.debug("generate key");
         try {
@@ -53,9 +48,19 @@ public class PublicKeyJwtCreator implements JwtCreator {
 
     @Override
     public Mono<String> create(JwtBody jwtBody) {
-        checkForKey();
+        LOG.info("create jwt token from body");
 
-        return jwtKeyRepository.findTop1ByRevokedIsFalse().flatMap(jwtKey -> {
+
+        return jwtKeyRepository.existsTop1ByRevokedIsFalse().flatMap(aBoolean -> {
+            if (aBoolean == false) {
+                LOG.debug("no existing jwtKey found");
+                return generateKey();
+            }
+            else {
+                LOG.debug("returning an existing jwtKey");
+                return jwtKeyRepository.findTop1ByRevokedIsFalse();
+            }
+        }).flatMap(jwtKey -> {
             Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
             Date issueDate = calendar.getTime();
 
@@ -65,8 +70,10 @@ public class PublicKeyJwtCreator implements JwtCreator {
 
             Date expireDate = calendar.getTime();
 
+            LOG.debug("load private key");
             Key privateKey = loadPrivateKey(jwtKey.getPrivateKey());
 
+            LOG.debug("add claims to jwt");
             Map<String, Object> claimsMap = new HashMap<>();
             claimsMap.put("clientId", jwtBody.getClientId());
             claimsMap.put("scope", jwtBody.getScope());
@@ -89,6 +96,7 @@ public class PublicKeyJwtCreator implements JwtCreator {
     }
 
     private static Map<String, Object> generateRSAKeys() throws Exception {
+        LOG.debug("generate RSAKeys");
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairGenerator.initialize(2048);
 
@@ -111,6 +119,8 @@ public class PublicKeyJwtCreator implements JwtCreator {
     }
 
     public JwtKey createJwtKey() throws Exception {
+        LOG.debug("createJwtKey");
+
         Map<String, Object> rsaKeys = generateRSAKeys();
 
         final String publicKeyString = Base64.getEncoder().encodeToString(((PublicKey) rsaKeys.get("public")).getEncoded());
