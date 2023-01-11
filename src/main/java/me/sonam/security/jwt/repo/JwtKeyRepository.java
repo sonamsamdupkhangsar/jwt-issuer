@@ -12,4 +12,5 @@ public interface JwtKeyRepository extends ReactiveCrudRepository<JwtKey, UUID> {
     @Query("update Jwt_Key jk set jk.revoked= :revoked where jk.id= :id")
     Mono<Integer> revokeKey(@Param("revoked")Boolean revoked, @Param("id")UUID id);
     Mono<JwtKey> findTop1ByRevokedIsFalse();
+    Mono<Boolean> existsTop1ByRevokedIsFalse();
 }

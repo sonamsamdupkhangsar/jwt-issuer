@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.time.Duration;
 import java.util.*;
 
 /**
@@ -34,11 +35,6 @@ public class PublicKeyJwtCreator implements JwtCreator {
     public PublicKeyJwtCreator() {
     }
 
-    public void checkForKey() {
-        Mono<JwtKey> keyMono = jwtKeyRepository.findTop1ByRevokedIsFalse();
-        keyMono.switchIfEmpty(generateKey()).subscribe();
-    }
-
     private Mono<JwtKey> generateKey() {
         LOG.debug("generate key");
         try {
@@ -51,27 +47,44 @@ public class PublicKeyJwtCreator implements JwtCreator {
     }
 
     @Override
-    public Mono<String> create(String clientUserRole, String clientId, String groupNames, String subject, String audience, int calendarField, int calendarValue) {
-        checkForKey();
+    public Mono<String> create(JwtBody jwtBody) {
+        LOG.info("create jwt token from body");
 
-        return jwtKeyRepository.findTop1ByRevokedIsFalse().flatMap(jwtKey -> {
+
+        return jwtKeyRepository.existsTop1ByRevokedIsFalse().flatMap(aBoolean -> {
+            if (aBoolean == false) {
+                LOG.debug("no existing jwtKey found");
+                return generateKey();
+            }
+            else {
+                LOG.debug("returning an existing jwtKey");
+                return jwtKeyRepository.findTop1ByRevokedIsFalse();
+            }
+        }).flatMap(jwtKey -> {
             Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
             Date issueDate = calendar.getTime();
 
-            calendar.add(calendarField, calendarValue);
+            Duration duration = Duration.ofSeconds(jwtBody.getExpiresInSeconds());
+
+            calendar.add(Calendar.SECOND, (int)duration.getSeconds());
+
             Date expireDate = calendar.getTime();
 
+            LOG.debug("load private key");
             Key privateKey = loadPrivateKey(jwtKey.getPrivateKey());
 
+            LOG.debug("add claims to jwt");
+            Map<String, Object> claimsMap = new HashMap<>();
+            claimsMap.put("clientId", jwtBody.getClientId());
+            claimsMap.put("scope", jwtBody.getScope());
+            claimsMap.put("keyId", jwtKey.getId() != null ? jwtKey.getId().toString() : null);
+
             String jwt = Jwts.builder()
-                    .setSubject(subject)
+                    .setSubject(jwtBody.getSub())
                     .setIssuer(issuer)
-                    .setAudience(audience)
+                    .setAudience(jwtBody.getAud())
                     .setIssuedAt(issueDate)
-                    .setHeaderParam("groups", groupNames)
-                    .setHeaderParam("clientId", clientId)
-                    .setHeaderParam("clientUserRole", clientUserRole)
-                    .setHeaderParam("keyId", jwtKey.getId())
+                    .addClaims(claimsMap)
                     .setExpiration(expireDate)
                     .setId(UUID.randomUUID().toString())
                     .signWith(SignatureAlgorithm.RS512, privateKey)
@@ -83,6 +96,7 @@ public class PublicKeyJwtCreator implements JwtCreator {
     }
 
     private static Map<String, Object> generateRSAKeys() throws Exception {
+        LOG.debug("generate RSAKeys");
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairGenerator.initialize(2048);
 
@@ -105,6 +119,8 @@ public class PublicKeyJwtCreator implements JwtCreator {
     }
 
     public JwtKey createJwtKey() throws Exception {
+        LOG.debug("createJwtKey");
+
         Map<String, Object> rsaKeys = generateRSAKeys();
 
         final String publicKeyString = Base64.getEncoder().encodeToString(((PublicKey) rsaKeys.get("public")).getEncoded());
@@ -115,8 +131,14 @@ public class PublicKeyJwtCreator implements JwtCreator {
 
     @Override
     public Mono<String> getPublicKey(UUID keyId) {
-        LOG.trace("return public key");
+        LOG.info("get public key for keyId: {}", keyId);
 
-        return  jwtKeyRepository.findById(keyId).map(jwtKey -> jwtKey.getPublicKey());
+        jwtKeyRepository.count().subscribe(aLong -> LOG.info("found {} rows of jwtKeys", aLong));
+        jwtKeyRepository.findById(keyId).subscribe(jwtKey -> LOG.info("for id: {} found jwtKey: {}", keyId, jwtKey));
+
+        return  jwtKeyRepository.findById(keyId)
+                .map(jwtKey -> jwtKey.getPublicKey())
+                .doOnNext(s -> LOG.info("publicKey: {}", s))
+                .map(s -> s);
     }
 }
