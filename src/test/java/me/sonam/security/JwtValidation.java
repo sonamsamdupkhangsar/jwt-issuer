@@ -47,46 +47,28 @@ public class JwtValidation {
     public void create() throws Exception {
         LOG.info("Create jwt");
 
-     /*   JwtKey jwtKey = jwtCreator.createJwtKey();
-        jwtKeyRepository.save(jwtKey).subscribe(jwtKey1 -> LOG.info("saved jwtKey: {}", jwtKey1));
-*/
         final String clientId = "sonam-123-322";
         final String subject = UUID.randomUUID().toString();
         final String audience = "email"; //the resource to access
         final String scopes = "email.write";
 
-        JwtBody jwtBody = new JwtBody(subject, scopes, clientId, audience, 10);
+        JwtBody jwtBody = new JwtBody(subject, scopes, clientId, audience, JwtBody.RoleEnum.user.toString(), "admin, manager", 10);
 
         Mono<String> jwtTokenString = jwtCreator.create(jwtBody);
 
         jwtTokenString.as(StepVerifier::create).assertNext(jwt -> {
             LOG.info("jwt: {}", jwt);
-            String[] parts = jwt.split("\\.");
-            try {
-                JSONObject header = new JSONObject(new String(Base64.getUrlDecoder().decode(parts[0])));
-                JSONObject payload = new JSONObject(new String(Base64.getUrlDecoder().decode(parts[1])));
-
-                String signature = new String(Base64.getUrlDecoder().decode(parts[2]));
-                LOG.info("header: {},\n payload: {},\n signature: {}", header, payload, signature);
-
-                LOG.info("jwtBody: {}", getFromString(payload.toString()));
-
-                JwtBody jwtBody1 = getFromString(payload.toString());
-                assertThat(jwtCreator.getPublicKey(jwtBody1.getKeyId())).isNotNull();
-                jwtCreator.getPublicKey(jwtBody1.getKeyId()).subscribe(key -> LOG.info("public key is {}", key));
-            }
-            catch (JSONException jse) {
-                LOG.error("Failed to parse to json", jse);
-            }
-
             assertThat(jwt).isNotNull();
+
+            jwtCreator.getKeyId(jwt).subscribe(keyId -> LOG.info("keyId is not null: {}", keyId));
 
 
         }).verifyComplete();
 
+
         LOG.info("request to create another jwt token");
 
-        jwtBody = new JwtBody(subject, scopes, clientId, audience, 10);
+        jwtBody = new JwtBody(subject, scopes, clientId, audience, JwtBody.RoleEnum.user.toString(), "employee", 10);
 
         jwtTokenString = jwtCreator.create(jwtBody);
         jwtTokenString.subscribe(s ->

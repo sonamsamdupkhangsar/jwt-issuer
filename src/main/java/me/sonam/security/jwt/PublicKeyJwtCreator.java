@@ -1,5 +1,7 @@
 package me.sonam.security.jwt;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.*;
 import me.sonam.security.jwt.repo.JwtKeyRepository;
 import me.sonam.security.jwt.repo.entity.JwtKey;
@@ -78,6 +80,8 @@ public class PublicKeyJwtCreator implements JwtCreator {
             claimsMap.put("clientId", jwtBody.getClientId());
             claimsMap.put("scope", jwtBody.getScope());
             claimsMap.put("keyId", jwtKey.getId() != null ? jwtKey.getId().toString() : null);
+            claimsMap.put("role", jwtBody.getRole());
+            claimsMap.put("groups", jwtBody.getGroups());
 
             String jwt = Jwts.builder()
                     .setSubject(jwtBody.getSub())
@@ -140,5 +144,31 @@ public class PublicKeyJwtCreator implements JwtCreator {
                 .map(jwtKey -> jwtKey.getPublicKey())
                 .doOnNext(s -> LOG.info("publicKey: {}", s))
                 .map(s -> s);
+    }
+
+    @Override
+    public Mono<String> getKeyId(String jwt) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            Base64.Decoder decoder = Base64.getUrlDecoder();
+
+            String[] chunks = jwt.split("\\.");
+            if (chunks.length >= 2) {
+                final String payload = new String(decoder.decode(chunks[1]));
+
+                JwtBody jwtBody = objectMapper.readValue(payload, JwtBody.class);
+                LOG.debug("jwtBody: {}", jwtBody);
+                LOG.info("returning keyId: {}", jwtBody.getKeyId());
+                return Mono.just(jwtBody.getKeyId().toString());
+            }
+            else {
+                return Mono.error(new JwtException("jwt is invalid, jwt split is less than 2"));
+            }
+        } catch (JsonProcessingException e) {
+            LOG.error("failed to marshal to jwtBody", e);
+            return Mono.error(new JwtException("Failed to convert the jwt token to get keyId, error: "+ e.getMessage()));
+        }
+
     }
 }

@@ -9,6 +9,10 @@ import java.util.UUID;
 public class JwtBody {
     private static final Logger LOG = LoggerFactory.getLogger(JwtBody.class);
 
+    public enum RoleEnum {
+        user, admin
+    }
+
     private UUID keyId;
     private String sub;
     private String scope;
@@ -20,18 +24,21 @@ public class JwtBody {
     private String iat;
     private String jti;
     private String iss;
-
+    private String role;
+    private String groups;
     public JwtBody() {
 
     }
 
-    public JwtBody(String sub, String scope, String clientId, String aud, long expiresInSeconds) {
+    public JwtBody(String sub, String scope, String clientId, String aud, String role, String groups, long expiresInSeconds) {
         this.sub = sub;
 
         this.scope = scope;
         this.clientId = clientId;
         this.aud = aud;
         this.expiresInSeconds = expiresInSeconds;
+        this.role = role;
+        this.groups = groups;
 
         if (this.sub.isEmpty()) {
             throw new JwtException("subject is empty");
@@ -56,9 +63,6 @@ public class JwtBody {
     public UUID getKeyId() {
         return keyId;
     }
-
-
-
 
     public String getScope() {
         return scope;
@@ -92,19 +96,29 @@ public class JwtBody {
         return iat;
     }
 
+    public String getRole() {
+        return role;
+    }
+
+    public String getGroups() {
+        return groups;
+    }
+
     @Override
     public String toString() {
         return "JwtBody{" +
-                "keyId='" + keyId + '\'' +
+                "keyId=" + keyId +
                 ", sub='" + sub + '\'' +
                 ", scope='" + scope + '\'' +
                 ", clientId='" + clientId + '\'' +
                 ", aud='" + aud + '\'' +
-                ", expiresInSeconds='" + expiresInSeconds + '\'' +
+                ", expiresInSeconds=" + expiresInSeconds +
                 ", exp='" + exp + '\'' +
                 ", iat='" + iat + '\'' +
                 ", jti='" + jti + '\'' +
                 ", iss='" + iss + '\'' +
+                ", role='" + role + '\'' +
+                ", groups='" + groups + '\'' +
                 '}';
     }
 
