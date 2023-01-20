@@ -12,7 +12,7 @@
 
     <groupId>me.sonam</groupId>
     <artifactId>jwt-issuer</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
     <name>jwt-issuer</name>
     <description>This is my spring security library for validating jwt token.</description>
 
@@ -99,8 +99,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>9</source>
-                    <target>9</target>
+                    <source>17</source>
+                    <target>17</target>
                 </configuration>
             </plugin>
         </plugins>

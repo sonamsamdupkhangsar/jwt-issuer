@@ -2,15 +2,12 @@ package me.sonam.security;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.Jwt;
 import me.sonam.security.jwt.JwtBody;
 import me.sonam.security.jwt.JwtException;
 import me.sonam.security.jwt.PublicKeyJwtCreator;
 import me.sonam.security.jwt.repo.JwtKeyRepository;
-import me.sonam.security.jwt.repo.entity.JwtKey;
-import okhttp3.mockwebserver.RecordedRequest;
-import org.json.JSONException;
-import org.json.JSONObject;
+import me.sonam.security.jwt.repo.entity.HmacKey;
+import me.sonam.security.jwt.repo.HmacKeyRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -22,10 +19,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.Base64;
-import java.util.Calendar;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.fail;
@@ -43,21 +36,30 @@ public class JwtValidation {
     @Autowired
     private JwtKeyRepository jwtKeyRepository;
 
+    @Autowired
+    private HmacKeyRepository hmacKeyRepository;
+    final String clientId = "sonam-123-322";
+    final String secretKey = "mysecret";
+    private HmacKey hmacKey;
+
     @Test
     public void create() throws Exception {
         LOG.info("Create jwt");
 
-        final String clientId = "sonam-123-322";
+        jwtCreator.generateKey(clientId, secretKey).subscribe(hmacKey1 -> LOG.info("crate a HmacKey: {}", hmacKey1));
+
         final String subject = UUID.randomUUID().toString();
         final String audience = "email"; //the resource to access
         final String scopes = "email.write";
 
         JwtBody jwtBody = new JwtBody(subject, scopes, clientId, audience, JwtBody.RoleEnum.user.toString(), "admin, manager", 10);
+        final String hmac = PublicKeyJwtCreator.getHmac(PublicKeyJwtCreator.Md5Algorithm.HmacSHA256.name(), PublicKeyJwtCreator.getJson(jwtBody), secretKey);
 
-        Mono<String> jwtTokenString = jwtCreator.create(jwtBody);
+        Mono<String> jwtTokenString = jwtCreator.create(jwtBody, hmac);
 
         jwtTokenString.as(StepVerifier::create).assertNext(jwt -> {
             LOG.info("jwt: {}", jwt);
+            assertThat(jwt).isNotEqualTo("jwt: No key found");
             assertThat(jwt).isNotNull();
 
             jwtCreator.getKeyId(jwt).subscribe(keyId -> LOG.info("keyId is not null: {}", keyId));
@@ -70,7 +72,7 @@ public class JwtValidation {
 
         jwtBody = new JwtBody(subject, scopes, clientId, audience, JwtBody.RoleEnum.user.toString(), "employee", 10);
 
-        jwtTokenString = jwtCreator.create(jwtBody);
+        jwtTokenString = jwtCreator.create(jwtBody, PublicKeyJwtCreator.getJson(jwtBody));
         jwtTokenString.subscribe(s ->
         LOG.info("jwtTokenString: {}", s)
         );

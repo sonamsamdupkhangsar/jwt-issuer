@@ -17,10 +17,8 @@ public class JwtKey implements Persistable<UUID> {
     private String privateKey;
     private String publicKey;
     private Boolean revoked;
-
     @Transient
     private boolean newKey;
-
 
     public JwtKey(String privateKey, String publicKey) {
         id = UUID.randomUUID();

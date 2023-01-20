@@ -39,21 +39,6 @@ public class JwtBody {
         this.expiresInSeconds = expiresInSeconds;
         this.role = role;
         this.groups = groups;
-
-        if (this.sub.isEmpty()) {
-            throw new JwtException("subject is empty");
-        }
-
-        if (this.scope.isEmpty()) {
-            throw new JwtException("scopes is emtpy");
-        }
-
-        if (this.clientId.isEmpty()) {
-            LOG.warn("clientId is empty");
-        }
-        if (this.aud.isEmpty()) {
-            throw new JwtException("audience is empty");
-        }
     }
 
     public String getSub() {
