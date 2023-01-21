@@ -67,11 +67,6 @@ public class HmacKey implements Persistable<String> {
 
     @Override
     public String toString() {
-        return "HmacKey{" +
-                "clientId=" + clientId +
-                ", hmacMD5Algorithm='" + hmacMD5Algorithm + '\'' +
-                ", secretkey='" + secretKey + '\'' +
-                ", isNew=" + newKey +
-                '}';
+        return "**not printing it.**";
     }
 }

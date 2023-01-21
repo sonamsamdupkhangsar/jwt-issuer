@@ -82,6 +82,22 @@ public class JwtValidation {
 
     }
 
+    @Test
+    public void invalidHmac() {
+       LOG.info("try a bad hmac");
+        final String subject = UUID.randomUUID().toString();
+        final String audience = "email"; //the resource to access
+        final String scopes = "email.write";
+
+        jwtCreator.generateKey(clientId, secretKey).subscribe(hmacKey1 -> LOG.info("crate a HmacKey: {}", hmacKey1));
+
+        JwtBody jwtBody = new JwtBody(subject, scopes, clientId, audience, JwtBody.RoleEnum.user.toString(), "admin, manager", 10);
+
+        Mono<String> jwtTokenString = jwtCreator.create(jwtBody, "bad hmac");
+
+        jwtTokenString.as(StepVerifier::create).expectError(JwtException.class).verify();
+    }
+
     public JwtBody getFromString(final String payload) {
         ObjectMapper objectMapper = new ObjectMapper();
 

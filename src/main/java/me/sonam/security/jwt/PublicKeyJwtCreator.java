@@ -68,10 +68,11 @@ public class PublicKeyJwtCreator implements JwtCreator {
                     final String hmac = getHmac(hmacKey.getHmacMD5Algorithm(), getJson(jwtBody), hmacKey.getSecretKey());
 
                     if (hmac.equals(hmacSHA256Value)) {
-                        LOG.debug("hmac value matches: {}, hmacSHA256Value: {}", hmac, hmacSHA256Value);
+                        LOG.debug("hmac value matches: '{}', hmacSHA256Value: '{}'", hmac, hmacSHA256Value);
                     }
                     else {
-                        Mono.error(new JwtException("Hmac value does not match"));
+                        LOG.error("hmac does not match");
+                        return Mono.error(new JwtException("Hmac value does not match"));
                     }
                     return jwtKeyRepository.existsTop1ByRevokedIsFalse();
                 }).flatMap(aBoolean -> {
@@ -210,10 +211,9 @@ public class PublicKeyJwtCreator implements JwtCreator {
     }
 
     @Override
-    public Mono<HmacKey> generateKey(String clientId, String yourKey) {
+    public Mono<HmacKey> generateKey(String clientId, String key) {
         LOG.info("generate HmacKey for clientId: {}", clientId);
-        final String key = yourKey;
-        final String hmacSHA256Algorithm = "HmacSHA256";
+
         HmacKey hmacKey = new HmacKey(true, clientId, key, Md5Algorithm.HmacSHA256.name());
         hmacKeyRepository.save(hmacKey).subscribe(hmacKey1 -> LOG.info("saved hmacKey {}", hmacKey1));
         return hmacKeyRepository.findById(clientId);
