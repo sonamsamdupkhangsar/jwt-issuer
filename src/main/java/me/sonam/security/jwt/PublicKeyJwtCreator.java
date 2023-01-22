@@ -53,38 +53,26 @@ public class PublicKeyJwtCreator implements JwtCreator {
             return jwtKeyRepository.save(jwtKey);
         } catch (Exception e) {
             LOG.error("failed to generate rsa public/private keys", e);
-            return Mono.error(new io.jsonwebtoken.JwtException("failed to generate key"));
+            return Mono.error(new JwtException("failed to generate key"));
         }
     }
 
     @Override
-    public Mono<String> create(JwtBody jwtBody, String hmacSHA256Value) {
+    public Mono<String> create(JwtBody jwtBody) {
         LOG.info("create jwt token from body");
 
-        return
-                hmacKeyRepository.findById(jwtBody.getClientId())
-                .flatMap(hmacKey -> {
-                    LOG.info("checking hmac signature");
-                    final String hmac = getHmac(hmacKey.getHmacMD5Algorithm(), getJson(jwtBody), hmacKey.getSecretKey());
-
-                    if (hmac.equals(hmacSHA256Value)) {
-                        LOG.debug("hmac value matches: '{}', hmacSHA256Value: '{}'", hmac, hmacSHA256Value);
+        return jwtKeyRepository.existsTop1ByRevokedIsFalse().
+                flatMap(aBoolean -> {
+                    if (aBoolean == false) {
+                        LOG.debug("no existing jwtKey found");
+                        return generateKey();
                     }
                     else {
-                        LOG.error("hmac does not match");
-                        return Mono.error(new JwtException("Hmac value does not match"));
+                        LOG.debug("returning an existing jwtKey");
+                        return jwtKeyRepository.findTop1ByRevokedIsFalse();
                     }
-                    return jwtKeyRepository.existsTop1ByRevokedIsFalse();
-                }).flatMap(aBoolean -> {
-            if (aBoolean == false) {
-                LOG.debug("no existing jwtKey found");
-                return generateKey();
-            }
-            else {
-                LOG.debug("returning an existing jwtKey");
-                return jwtKeyRepository.findTop1ByRevokedIsFalse();
-            }
-        }).flatMap(jwtKey -> {
+                })
+                .flatMap(jwtKey -> {
             LOG.info("hello");
             Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
             Date issueDate = calendar.getTime();
@@ -232,6 +220,27 @@ public class PublicKeyJwtCreator implements JwtCreator {
             LOG.error("Exception occured in generating hmac", e);
             return null;
         }
+    }
+
+    @Override
+    public Mono<Boolean> hmacMatches(final String dataHmacSHA256Value, final String data, final String clientId) {
+        return hmacKeyRepository.findById(clientId)
+                .switchIfEmpty(Mono.error(new JwtException("No hmacKey found with clientId")))
+                .flatMap(hmacKey -> {
+                    LOG.info("user hmac: {}, data: {}, clientId: {}", dataHmacSHA256Value, data, clientId);
+
+                    LOG.info("checking hmac signature");
+                    final String hmac = getHmac(hmacKey.getHmacMD5Algorithm(), data, hmacKey.getSecretKey());
+                    LOG.debug("hmac computed value: '{}', vs client supplied hmacSHA256Value: '{}'", hmac, dataHmacSHA256Value);
+
+                    if (hmac.equals(dataHmacSHA256Value)) {
+                        LOG.debug("hmac value matches");
+                        return Mono.just(true);
+                    } else {
+                        LOG.error("hmac does not match");
+                        return Mono.just(false);
+                    }
+                });
     }
 
 }
