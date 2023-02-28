@@ -26,11 +26,13 @@ public class JwtBody {
     private String iss;
     private String role;
     private String groups;
+    private JwtBody userJwt;
+
     public JwtBody() {
 
     }
 
-    public JwtBody(String sub, String scope, String clientId, String aud, String role, String groups, long expiresInSeconds) {
+    public JwtBody(String sub, String scope, String clientId, String aud, String role, String groups, long expiresInSeconds, JwtBody userJwt) {
         this.sub = sub;
 
         this.scope = scope;
@@ -39,6 +41,7 @@ public class JwtBody {
         this.expiresInSeconds = expiresInSeconds;
         this.role = role;
         this.groups = groups;
+        this.userJwt = userJwt;
     }
 
     public String getSub() {
@@ -89,6 +92,10 @@ public class JwtBody {
         return groups;
     }
 
+    public JwtBody getUserJwt() {
+        return this.userJwt;
+    }
+
     @Override
     public String toString() {
         return "JwtBody{" +
@@ -104,6 +111,7 @@ public class JwtBody {
                 ", iss='" + iss + '\'' +
                 ", role='" + role + '\'' +
                 ", groups='" + groups + '\'' +
+                ", userJwt='"+ userJwt +'\''+
                 '}';
     }
 

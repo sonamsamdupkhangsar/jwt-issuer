@@ -184,11 +184,11 @@ public class PublicKeyJwtCreator implements JwtCreator {
 
     }
 
-    public static String getJson(JwtBody jwtBody) {
+    public static String getJson(Object object) {
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
-            final String jsonBody = objectMapper.writeValueAsString(jwtBody);
+            final String jsonBody = objectMapper.writeValueAsString(object);
             LOG.debug("jsonBody: {}", jsonBody);
 
             return jsonBody;
@@ -202,7 +202,7 @@ public class PublicKeyJwtCreator implements JwtCreator {
     public Mono<HmacKey> generateKey(String clientId, String key) {
         LOG.info("generate HmacKey for clientId: {}", clientId);
 
-        HmacKey hmacKey = new HmacKey(true, clientId, key, Md5Algorithm.HmacSHA256.name());
+        HmacKey hmacKey = new HmacKey(true, clientId, key, Md5Algorithm.HmacSHA256.name(), true);
         hmacKeyRepository.save(hmacKey).subscribe(hmacKey1 -> LOG.info("saved hmacKey {}", hmacKey1));
         return hmacKeyRepository.findById(clientId);
     }

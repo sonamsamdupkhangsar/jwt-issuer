@@ -52,7 +52,7 @@ public class JwtValidation {
         final String audience = "email"; //the resource to access
         final String scopes = "email.write";
 
-        JwtBody jwtBody = new JwtBody(subject, scopes, clientId, audience, JwtBody.RoleEnum.user.toString(), "admin, manager", 10);
+        JwtBody jwtBody = new JwtBody(subject, scopes, clientId, audience, JwtBody.RoleEnum.user.toString(), "admin, manager", 10, null);
        // final String hmac = PublicKeyJwtCreator.getHmac(PublicKeyJwtCreator.Md5Algorithm.HmacSHA256.name(), PublicKeyJwtCreator.getJson(jwtBody), secretKey);
 
         Mono<String> jwtTokenString = jwtCreator.create(jwtBody/*, hmac*/);
@@ -70,7 +70,7 @@ public class JwtValidation {
 
         LOG.info("request to create another jwt token");
 
-        jwtBody = new JwtBody(subject, scopes, clientId, audience, JwtBody.RoleEnum.user.toString(), "employee", 10);
+        jwtBody = new JwtBody(subject, scopes, clientId, audience, JwtBody.RoleEnum.user.toString(), "employee", 10, null);
 
         jwtTokenString = jwtCreator.create(jwtBody/*, PublicKeyJwtCreator.getJson(jwtBody)*/);
         jwtTokenString.subscribe(s ->
@@ -115,6 +115,7 @@ public class JwtValidation {
 
         jwtCreator.hmacMatches(dataHmacValue, json2, clientId).as(StepVerifier::create).assertNext(aBoolean -> assertThat(aBoolean).isFalse()).verifyComplete();
     }
+
  //   @Test
     public void invalidHmac() {
        LOG.info("try a bad hmac");
@@ -124,7 +125,7 @@ public class JwtValidation {
 
         jwtCreator.generateKey(clientId, secretKey).subscribe(hmacKey1 -> LOG.info("crate a HmacKey: {}", hmacKey1));
 
-        JwtBody jwtBody = new JwtBody(subject, scopes, clientId, audience, JwtBody.RoleEnum.user.toString(), "admin, manager", 10);
+        JwtBody jwtBody = new JwtBody(subject, scopes, clientId, audience, JwtBody.RoleEnum.user.toString(), "admin, manager", 10, null);
 
         Mono<String> jwtTokenString = jwtCreator.create(jwtBody/*, "bad hmac"*/);
 
@@ -154,7 +155,7 @@ public class JwtValidation {
         final String audience = "email"; //the resource to access
         final String scopes = "email.write";
 
-        JwtBody jwtBody = new JwtBody(subject, scopes, clientId, audience, JwtBody.RoleEnum.user.toString(), "admin, manager", 10);
+        JwtBody jwtBody = new JwtBody(subject, scopes, clientId, audience, JwtBody.RoleEnum.user.toString(), "admin, manager", 10, null);
         final String hmac = PublicKeyJwtCreator.getHmac(PublicKeyJwtCreator.Md5Algorithm.HmacSHA256.name(), PublicKeyJwtCreator.getJson(jwtBody), secretKey);
 
         Mono<String> jwtTokenString = jwtCreator.create(jwtBody);//, hmac);

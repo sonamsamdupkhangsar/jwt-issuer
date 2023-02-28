@@ -1,5 +1,6 @@
 package me.sonam.security;
 
+import me.sonam.security.jwt.PublicKeyJwtCreator;
 import me.sonam.security.jwt.repo.entity.HmacKey;
 import me.sonam.security.jwt.repo.HmacKeyRepository;
 import org.junit.jupiter.api.Test;
@@ -16,8 +17,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @DataR2dbcTest
-public class HmacKeyReositoryTest {
-    private static final Logger LOG = LoggerFactory.getLogger(HmacKeyReositoryTest.class);
+public class HmacKeyRepositoryTest {
+    private static final Logger LOG = LoggerFactory.getLogger(HmacKeyRepositoryTest.class);
 
     @Autowired
     private HmacKeyRepository hmacKeyRepository;
@@ -25,7 +26,9 @@ public class HmacKeyReositoryTest {
     @Test
     public void save() {
         final String clientId = "123-clientid";
-        HmacKey hmacKey = new HmacKey(true, clientId,"mysecret", "HmacMD5");
+        HmacKey hmacKey = new HmacKey(true, clientId,"mysecret", "HmacMD5", true);
+        LOG.info("json for hmacKey: {}", PublicKeyJwtCreator.getJson(hmacKey));
+
         hmacKeyRepository.save(hmacKey).subscribe(hmacKey1 -> LOG.info("saved hmacKey: {}", hmacKey1));
 
         hmacKeyRepository.existsById(clientId).subscribe(aBoolean -> LOG.info("must exists key {}", aBoolean));

@@ -13,14 +13,18 @@ public class HmacKey implements Persistable<String> {
     private String hmacMD5Algorithm;
     private String secretKey;
 
+    //expired is primitive type so that it will default to false
+    private boolean active;
+
     @Transient
     private boolean newKey = false;
 
-    public HmacKey(boolean newKey, String clientId, String secretKey, String hmacMD5Algorithm) {
+    public HmacKey(boolean newKey, String clientId, String secretKey, String hmacMD5Algorithm, boolean active) {
         this.newKey = newKey;
         this.clientId = clientId;
         this.hmacMD5Algorithm = hmacMD5Algorithm;
         this.secretKey = secretKey;
+        this.active = active;
     }
 
     public HmacKey() {
@@ -37,6 +41,10 @@ public class HmacKey implements Persistable<String> {
 
     public String getClientId() {
         return this.clientId;
+    }
+
+    public boolean isActive() {
+        return active;
     }
 
     @Override
