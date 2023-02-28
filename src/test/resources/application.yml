@@ -31,3 +31,7 @@ spring:
     url: r2dbc:h2:mem:///contentitem?options=DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     name: sa
     password:
+
+hmackeys:
+  - app: '{"clientId":"authentication-rest-service","hmacMD5Algorithm":"HmacMD5","secretKey":"mysecret","active":true, "isNew": true}'
+  - app: '{"clientId":"email-rest-service","hmacMD5Algorithm":"HmacMD5","secretKey":"mysecret","active":true, "isNew": true}'
