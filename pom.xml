@@ -14,7 +14,7 @@
     <artifactId>jwt-issuer</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>jwt-issuer</name>
-    <description>This is my spring security library for validating jwt token.</description>
+    <description>This is my spring security library for issuing jwt token.</description>
 
     <dependencies>
         <dependency>

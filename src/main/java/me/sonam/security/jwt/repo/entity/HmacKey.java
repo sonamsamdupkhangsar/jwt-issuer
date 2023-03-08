@@ -10,7 +10,7 @@ public class HmacKey implements Persistable<String> {
 
     @Id
     private String clientId;
-    private String hmacMD5Algorithm;
+    private String algorithm;
     private String secretKey;
 
     //expired is primitive type so that it will default to false
@@ -19,10 +19,10 @@ public class HmacKey implements Persistable<String> {
     @Transient
     private boolean newKey = false;
 
-    public HmacKey(boolean newKey, String clientId, String secretKey, String hmacMD5Algorithm, boolean active) {
+    public HmacKey(boolean newKey, String clientId, String secretKey, String algorithm, boolean active) {
         this.newKey = newKey;
         this.clientId = clientId;
-        this.hmacMD5Algorithm = hmacMD5Algorithm;
+        this.algorithm = algorithm;
         this.secretKey = secretKey;
         this.active = active;
     }
@@ -31,8 +31,8 @@ public class HmacKey implements Persistable<String> {
 
     }
 
-    public String getHmacMD5Algorithm() {
-        return hmacMD5Algorithm;
+    public String getAlgorithm() {
+        return algorithm;
     }
 
     public String getSecretKey() {
@@ -65,12 +65,12 @@ public class HmacKey implements Persistable<String> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         HmacKey hmacKey = (HmacKey) o;
-        return Objects.equals(hmacMD5Algorithm, hmacKey.hmacMD5Algorithm) && Objects.equals(clientId, hmacKey.clientId);
+        return Objects.equals(algorithm, hmacKey.algorithm) && Objects.equals(clientId, hmacKey.clientId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(hmacMD5Algorithm, clientId);
+        return Objects.hash(algorithm, clientId);
     }
 
     @Override
