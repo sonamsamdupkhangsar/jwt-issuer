@@ -33,5 +33,5 @@ spring:
     password:
 
 hmackeys:
-  - app: '{"clientId":"authentication-rest-service","hmacMD5Algorithm":"HmacMD5","secretKey":"mysecret","active":true, "isNew": true}'
-  - app: '{"clientId":"email-rest-service","hmacMD5Algorithm":"HmacMD5","secretKey":"mysecret","active":true, "isNew": true}'
+  - app: '{"clientId":"authentication-rest-service","algorithm":"HmacMD5","secretKey":"mysecret","active":true, "isNew": true}'
+  - app: '{"clientId":"email-rest-service","algorithm":"HmacMD5","secretKey":"mysecret","active":true, "isNew": true}'

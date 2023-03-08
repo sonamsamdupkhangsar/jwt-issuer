@@ -27,11 +27,11 @@ public class HmacTest {
     public void givenDataAndKeyAndAlgorithm_whenHmacWithApacheCommons_thenSuccess() {
 
         String hmacMD5Value = "621dc816b3bf670212e0c261dc9bcdb6";
-        String hmacMD5Algorithm = "HmacMD5";
+        String algorithm = "HmacMD5";
         String data = "baeldung";
         String key = "123456";
 
-        String result = HmacTest.hmacWithApacheCommons(hmacMD5Algorithm, data, key);
+        String result = HmacTest.hmacWithApacheCommons(algorithm, data, key);
         LOG.info("result: {}, hmacMD5Value: {}", result, hmacMD5Value);
         assertEquals(hmacMD5Value, result);
     }

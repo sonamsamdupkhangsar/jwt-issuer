@@ -230,7 +230,7 @@ public class PublicKeyJwtCreator implements JwtCreator {
                     LOG.info("user hmac: {}, data: {}, clientId: {}", dataHmacSHA256Value, data, clientId);
 
                     LOG.info("checking hmac signature");
-                    final String hmac = getHmac(hmacKey.getHmacMD5Algorithm(), data, hmacKey.getSecretKey());
+                    final String hmac = getHmac(hmacKey.getAlgorithm(), data, hmacKey.getSecretKey());
                     LOG.debug("hmac computed value: '{}', vs client supplied hmacSHA256Value: '{}'", hmac, dataHmacSHA256Value);
 
                     if (hmac.equals(dataHmacSHA256Value)) {
